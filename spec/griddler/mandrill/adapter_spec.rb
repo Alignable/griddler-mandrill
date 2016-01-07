@@ -104,16 +104,16 @@ describe Griddler::Mandrill::Adapter, '.normalize_params' do
     end
   end
 
-  describe 'when the spf record is softfail' do
+  describe 'when the spf record is missing' do
     before do
       @params = params_hash
-      @params.first[:msg][:spf] = { result: 'softfail', detail: 'domain owner discourages use of this host' }
+      @params.first[:msg][:spf] = nil
     end
 
-    it "doesn't include emails that have failed the SPF test" do
+    it "includes emails that have missing SPF results" do
       params = default_params(@params)
       normalized_params = Griddler::Mandrill::Adapter.normalize_params(params)
-      expect(normalized_params).to be_empty
+      expect(normalized_params.size).to eql 2
     end
   end
 
@@ -127,19 +127,6 @@ describe Griddler::Mandrill::Adapter, '.normalize_params' do
       params = default_params(@params)
       normalized_params = Griddler::Mandrill::Adapter.normalize_params(params)
       expect(normalized_params).to be_empty
-    end
-  end
-
-  describe 'when the spf record is neutral' do
-    before do
-      @params = params_hash
-      @params.first[:msg][:spf] = { result: 'neutral', detail: 'sender SPF neutral' }
-    end
-
-    it "does include emails that have the SPF result as 'neutral'" do
-      params = default_params(@params)
-      normalized_params = Griddler::Mandrill::Adapter.normalize_params(params)
-      expect(normalized_params.size).to eql 2
     end
   end
 
